@@ -1,0 +1,6 @@
+#ignore non-script directories
+
+env/
+.vscode/
+__pycache__/
+data/
