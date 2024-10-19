@@ -56,7 +56,7 @@ def add_image(id, image):
     except sqlite3.IntegrityError as e:
         print(f'There was an error adding the image: {e}')
 
-def edit_card_param(id, name=None, cmc=None, cost=None, card_type=None, subtype=None, colour=None, rarity=None, count=None):
+def edit_query_constructor(id, name=None, cmc=None, cost=None, card_type=None, subtype=None, colour=None, rarity=None, count=None):
     cursor.execute('SELECT 1 FROM cards WHERE id = ?', (id,)) #check if the card exists
     if cursor.fetchone() is None:
         print(f'Card with id {id} not found in database.')
@@ -158,11 +158,3 @@ def delete_card(id): #delete a card from the table by its id
     cursor.execute('DELETE FROM cards WHERE id = ?', (id,))
     cursor.execute('DELETE FROM images WHERE id = ?', (id,))
     connection.commit()
-
-
-# cursor.execute('DROP TABLE cards')
-# cursor.execute('DROP TABLE images')
-
-# print(search(name = 'i'))
-
-# create_tables()

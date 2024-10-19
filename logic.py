@@ -36,7 +36,6 @@ def card_search(name, cmc, cost, type, subtype, is_white, is_blue, is_black, is_
             convert_empty_str[i] = None
     name, cmc, cost, subtype = convert_empty_str
 
-    
     print(f'Searching {(name, cmc, cost, type, subtype, colours_string, rarity)}')
     result = db.search_query_constructor(name, cmc, cost, type, subtype, colours_string, rarity)
     return result
@@ -45,3 +44,7 @@ def image_selection():
     img_path = filedialog.askopenfilename(title='select a file: ', filetypes=[("Images", ("*.png", "*.jpg", "*.jpeg"))])
     if img_path:
         print(f"Selected file: {img_path}")
+
+def edit_button_callback(id):
+    print(f'Editing card with ID {id}')
+    
