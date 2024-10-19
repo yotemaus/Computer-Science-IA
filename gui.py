@@ -136,7 +136,6 @@ grid_scroll.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
 #the window to add a card
 def add_card_window():
-    global add_window
     add_window = ctk.CTkToplevel()
     add_window.geometry('430x630')
     add_window.grid_columnconfigure(0, weight=1)
@@ -185,7 +184,7 @@ def add_card_window():
     add_colours_frame = ctk.CTkFrame(add_window)
     add_colours_frame.grid(row=5, column=0, padx=10, pady=5, sticky='ew')
     add_colours_frame.grid_columnconfigure((0,1,2,3,4), weight=1)
-    add_colours_label = ctk.CTkLabel(add_colours_frame, text='Subtype', font=('Helvetica', 12, 'bold'), text_color='white')
+    add_colours_label = ctk.CTkLabel(add_colours_frame, text='Colour', font=('Helvetica', 12, 'bold'), text_color='white')
     add_colours_label.grid(column=0, row=0, padx=5, sticky='w')
     add_colour_checkbox_w = ctk.CTkCheckBox(add_colours_frame, width=50, text=('W'))
     add_colour_checkbox_w.grid(column=0, row=1, padx=(5, 0), pady=(0, 8), sticky='ew')
@@ -201,10 +200,11 @@ def add_card_window():
     add_rarity_frame = ctk.CTkFrame(add_window)
     add_rarity_frame.grid(row=6, column=0, padx=10, pady=5, sticky='ew')
     add_rarity_frame.grid_columnconfigure(0, weight=1)
-    add_rarity_label = ctk.CTkLabel(add_rarity_frame, text='Subtype', font=('Helvetica', 12, 'bold'), text_color='white')
+    add_rarity_label = ctk.CTkLabel(add_rarity_frame, text='Rarity', font=('Helvetica', 12, 'bold'), text_color='white')
     add_rarity_label.grid(column=0, row=0, padx=5, sticky='w')
-    add_rarity_entry = ctk.CTkEntry(add_rarity_frame)
+    add_rarity_entry = ctk.CTkComboBox(add_rarity_frame, values=['Common','Uncommon','Rare','Mythic Rare'])
     add_rarity_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
+
 
     add_image_frame = ctk.CTkFrame(add_window)
     add_image_frame.grid(row=7, column=0, padx=10, pady=5, sticky='ew')
@@ -214,14 +214,9 @@ def add_card_window():
     add_image_button = ctk.CTkButton(add_image_frame, text='Select a File', command=lambda: logic.image_selection())
     add_image_button.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
-    confirm_add_button = ctk.CTkButton(add_window, text='Add', command=lambda: skibidi())
+    confirm_add_button = ctk.CTkButton(add_window, text='Add')
     confirm_add_button.grid(row=8, column=0, padx=10, pady=(5,10), sticky='nesw')
     add_window.grid_rowconfigure(8, weight=1)
-
-def skibidi():
-    w = add_window.winfo_width()
-    h = add_window.winfo_height()
-    print(f'{w}x{h}')
 
 #take name and filter settings from search bar and call display with search results
 def init_search():
