@@ -158,4 +158,3 @@ def delete_card(id): #delete a card from the table by its id
     cursor.execute('DELETE FROM cards WHERE id = ?', (id,))
     cursor.execute('DELETE FROM images WHERE id = ?', (id,))
     connection.commit()
-    

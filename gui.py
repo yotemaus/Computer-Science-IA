@@ -137,14 +137,14 @@ grid_scroll.grid_columnconfigure((0, 1, 2, 3), weight=1)
 #the window to add a card
 def add_card_window():
     add_window = ctk.CTkToplevel()
-    add_window.geometry('430x630')
+    add_window.geometry('430x730')
     add_window.grid_columnconfigure(0, weight=1)
     add_window.title('Add a Card')
 
     add_name_frame = ctk.CTkFrame(add_window)
     add_name_frame.grid(row=0, column=0, padx=10, pady=(10,5), sticky='ew')
     add_name_frame.grid_columnconfigure(0, weight=1)
-    add_name_label = ctk.CTkLabel(add_name_frame, text='Name', font=('Helvetica', 12, 'bold'), text_color='white')
+    add_name_label = ctk.CTkLabel(add_name_frame, text='Card Name', font=('Helvetica', 12, 'bold'), text_color='white')
     add_name_label.grid(column=0, row=0, padx=5, sticky='w')
     add_name_entry = ctk.CTkEntry(add_name_frame)
     add_name_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
@@ -160,7 +160,7 @@ def add_card_window():
     add_cmc_frame = ctk.CTkFrame(add_window)
     add_cmc_frame.grid(row=2, column=0, padx=10, pady=5, sticky='ew')
     add_cmc_frame.grid_columnconfigure(0, weight=1)
-    add_cmc_label = ctk.CTkLabel(add_cmc_frame, text='Converted Mana Cost (Mana Value)', font=('Helvetica', 12, 'bold'), text_color='white')
+    add_cmc_label = ctk.CTkLabel(add_cmc_frame, text='Converted Mana Cost', font=('Helvetica', 12, 'bold'), text_color='white')
     add_cmc_label.grid(column=0, row=0, padx=5, sticky='w')
     add_cmc_entry= ctk.CTkEntry(add_cmc_frame)
     add_cmc_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
@@ -205,18 +205,56 @@ def add_card_window():
     add_rarity_entry = ctk.CTkComboBox(add_rarity_frame, values=['Common','Uncommon','Rare','Mythic Rare'])
     add_rarity_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
+    add_count_frame = ctk.CTkFrame(add_window)
+    add_count_frame.grid(row=7, column=0, padx=10, pady=5, sticky='ew')
+    add_count_frame.grid_columnconfigure(0, weight=1)
+    add_count_label = ctk.CTkLabel(add_count_frame, text='Quantity (Enter an Integer)', font=('Helvetica', 12, 'bold'), text_color='white')
+    add_count_label.grid(column=0, row=0, padx=5, sticky='w')
+    add_count_entry = ctk.CTkEntry(add_count_frame)
+    add_count_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
     add_image_frame = ctk.CTkFrame(add_window)
-    add_image_frame.grid(row=7, column=0, padx=10, pady=5, sticky='ew')
+    add_image_frame.grid(row=8, column=0, padx=10, pady=5, sticky='ew')
     add_image_frame.grid_columnconfigure(0, weight=1)
-    add_image_label = ctk.CTkLabel(add_image_frame, text='Subtype', font=('Helvetica', 12, 'bold'), text_color='white')
+    add_image_label = ctk.CTkLabel(add_image_frame, text='Image', font=('Helvetica', 12, 'bold'), text_color='white')
     add_image_label.grid(column=0, row=0, padx=5, sticky='w')
     add_image_button = ctk.CTkButton(add_image_frame, text='Select a File', command=lambda: logic.image_selection())
     add_image_button.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
-    confirm_add_button = ctk.CTkButton(add_window, text='Add')
-    confirm_add_button.grid(row=8, column=0, padx=10, pady=(5,10), sticky='nesw')
-    add_window.grid_rowconfigure(8, weight=1)
+
+    confirm_add_button = ctk.CTkButton(add_window, text='Add', command=lambda: init_add(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
+                                                                                        add_subtype_entry, add_colour_checkbox_w, add_colour_checkbox_u,
+                                                                                        add_colour_checkbox_b, add_colour_checkbox_r, add_colour_checkbox_g,
+                                                                                        add_rarity_entry, add_count_entry))
+    confirm_add_button.grid(row=9, column=0, padx=10, pady=(5,10), sticky='nesw')
+    add_window.grid_rowconfigure(9, weight=1)
+
+
+#passing parameters to the databse add function
+def init_add(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
+            add_subtype_entry, add_colour_checkbox_w, add_colour_checkbox_u,
+            add_colour_checkbox_b, add_colour_checkbox_r, add_colour_checkbox_g,
+            add_rarity_entry, add_count_entry):
+    data = {
+        'name' : add_name_entry.get(),
+        'cost' : add_cost_entry.get(),
+        'cmc' : add_cmc_entry.get(),
+        'card_type' : add_type_entry.get(),
+        'subtype' : add_subtype_entry.get(),
+        'colour' : [
+            'W' if add_colour_checkbox_w.get() else '',
+            'U' if add_colour_checkbox_u.get() else '',
+            'B' if add_colour_checkbox_b.get() else '',
+            'R' if add_colour_checkbox_r.get() else '',
+            'G' if add_colour_checkbox_g.get() else ''
+        ],
+        'rarity' : add_rarity_entry.get(),
+        'count' : add_count_entry.get()
+    }
+    data['colour'] = [color for color in data['colour'] if color]
+    data['colour'] = ''.join(data['colour'])
+    data = {key: (value if value !='' else None) for key, value in data.items()}
+    db.add_card(**data)
 
 #take name and filter settings from search bar and call display with search results
 def init_search():
