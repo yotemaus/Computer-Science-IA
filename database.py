@@ -1,8 +1,14 @@
 import sqlite3
+from pathlib import Path
+import shutil
 
-# This file acts as the back-end and will be used to implement the datbase ()
+script_directory = Path(__file__).parent
+data_dir_path = script_directory/'data'
+data_dir_path.mkdir(exist_ok=True)
+image_dir_path = data_dir_path/'images'
+image_dir_path.mkdir(exist_ok=True)
 
-connection = sqlite3.connect('data/cards.db')
+connection = sqlite3.connect(f'{data_dir_path}/cards.db')
 connection.execute('PRAGMA foreign_keys = 1;')
 cursor = connection.cursor()
 
@@ -21,7 +27,7 @@ def create_tables():
     
     cursor.execute('''CREATE TABLE IF NOT EXISTS images(
                         id INTEGER PRIMARY KEY,
-                        image BLOB,
+                        path TEXT,
                         FOREIGN KEY (id) REFERENCES cards(id)
                     )''') #images will be stored in a separate table using a foreign key to make fetchall() more efficient
     
@@ -47,10 +53,12 @@ def add_card(name, cmc, cost, card_type, subtype, colour, rarity, count): #add a
     except sqlite3.IntegrityError as e:
         print(f"There was an error adding the card: {e}")
 
-def add_image(id, image):
+def add_image(path):
     try:
-        blob_data = convert_to_blob(f'data/images/{image}')
-        cursor.execute('INSERT INTO IMAGES (id, image) VALUES (?, ?)', (id, blob_data))
+        cursor.execute("SELECT id FROM cards ORDER BY id DESC")
+        new_id = cursor.fetchone()[0]
+        shutil.copy(path, image_dir_path/new_id)
+        cursor.execute('INSERT INTO IMAGES (id, image) VALUES (?, ?)', (new_id, path))
         connection.commit()
 
     except sqlite3.IntegrityError as e:
@@ -174,3 +182,4 @@ def fetch_by_id(id):
     if row[5]:
         row[5] = tuple(row[5])
     return row
+
