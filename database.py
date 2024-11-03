@@ -115,9 +115,19 @@ def edit_image(id, image): #swap image with new path
     except sqlite3.IntegrityError as e:
         print(f"There was an error updating the image {e}")
 
-def search_query_constructor(name=None, cmc=None, cost=None, card_type=None, subtype=None, colour=None, rarity=None):
+def search_query_constructor(name=None, cmc=None, cost=None, card_type=None, subtype=None, colour=None, rarity=None, sort_by=None):
     search_by = []
     param = []
+
+    match sort_by:
+        case 'Date Added (New - Old)':
+            order = 'id DESC'
+        case 'Date Added (Old - New)':
+            order = 'id ASC'
+        case 'Alphabetical (A-Z)':
+            order= 'name ASC'
+        case 'Alphabetical (Z-A)':
+            order = 'name DESC'
 
     if name is not None:
         search_by.append("name LIKE ?") # name LIKE used to avoid case sensitivity
@@ -143,15 +153,14 @@ def search_query_constructor(name=None, cmc=None, cost=None, card_type=None, sub
 
     if search_by:
         try:
-
-            cursor.execute(f"SELECT * FROM cards WHERE {' AND '.join(search_by)}", tuple(param))
+            cursor.execute(f"SELECT * FROM cards WHERE {' AND '.join(search_by)} ORDER BY {order}", tuple(param))
             return cursor.fetchall()
 
         except sqlite3.IntegrityError as e:
             print(f'There was an error searching for cars {e}')
 
     else:
-        cursor.execute("SELECT * FROM cards")  
+        cursor.execute(f"SELECT * FROM cards ORDER BY {order}")  
         return (cursor.fetchall())
 
 def delete_card(id): #delete a card from the table by its id

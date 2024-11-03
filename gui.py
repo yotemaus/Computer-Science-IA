@@ -110,7 +110,7 @@ sort_by_frame.grid_columnconfigure((0, 1, 2), weight=1)
 sort_by_frame.grid(column=0, columnspan=2, row=4, padx=(20, 5), pady=5, sticky='ew')
 sort_by_label = ctk.CTkLabel(sort_by_frame, text='Sort By:', font=('Helvetica', 16, 'bold'), text_color='white')
 sort_by_label.grid(column=0, row=0, padx=5, pady=5, sticky='ew')
-sort_by_dropdown = ctk.CTkOptionMenu(sort_by_frame, values=['Date Added (New - Old)', 'Date Added (Old - New)', 'Alphabetical (A-Z)', 'Aplhabetical (Z-A)'])
+sort_by_dropdown = ctk.CTkOptionMenu(sort_by_frame, values=['Date Added (New - Old)', 'Date Added (Old - New)', 'Alphabetical (A-Z)', 'Alphabetical (Z-A)'])
 sort_by_dropdown.grid(column=1, columnspan=2, row=0, padx=(0, 5), pady=5, sticky='ew')
 
 #grid/list
@@ -277,6 +277,7 @@ def init_search():
         'G' if colour_checkbox_g.get() else '',
         ],
     'rarity' : rarity_filter.get(),
+    'sort_by' : sort_by_dropdown.get()
     }
 
     search_data['colour'] = [color for color in search_data['colour'] if color]
@@ -303,7 +304,7 @@ def display_results(results): #results is a list of tuples passed by the card se
         id, name, cmc, cost, type, subtype, colour, rarity, count = [
                     "N/A" if value is None else value for value in row
                 ]
-
+        
         list_card_frame = ctk.CTkFrame(list_scroll, fg_color='blue')
         list_card_frame.grid(row=i, column=0, pady=0, sticky='new')
         list_card_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)  # Distribute column weight
