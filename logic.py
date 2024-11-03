@@ -7,15 +7,15 @@ def convert_to_blob(filename): #convert image to binary data for storage in data
     return blob_data
 
 #gui
-def card_search(name, cmc, cost, type, subtype, colour, rarity):
+def card_search(name, cmc, cost, type, subtype, colour, rarity, sort_by):
 
     if type == "All Types":
         type = None
     if rarity == "All Rarities":
         rarity = None
-
-    print(f'Searching {(name, cmc, cost, type, subtype, colour, rarity)}')
-    result = db.search_query_constructor(name, cmc, cost, type, subtype, colour, rarity)
+    
+    print(f'Searching {(name, cmc, cost, type, subtype, colour, rarity, sort_by)}')
+    result = db.search_query_constructor(name, cmc, cost, type, subtype, colour, rarity, sort_by)
     return result
 
 def image_selection():
