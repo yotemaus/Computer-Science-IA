@@ -158,3 +158,10 @@ def delete_card(id): #delete a card from the table by its id
     cursor.execute('DELETE FROM cards WHERE id = ?', (id,))
     cursor.execute('DELETE FROM images WHERE id = ?', (id,))
     connection.commit()
+
+def fetch_by_id(id):
+    cursor.execute('SELECT name, cmc, cost, card_type, subtype, colour, rarity, count FROM cards WHERE id = ?', (id,))
+    row = list(cursor.fetchone())
+    if row[5]:
+        row[5] = tuple(row[5])
+    return row
