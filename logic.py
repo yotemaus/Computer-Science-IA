@@ -17,7 +17,7 @@ def image_selection():
     img_path = filedialog.askopenfilename(title='select a file: ', filetypes=[("Images", ("*.png", "*.jpg", "*.jpeg"))])
     if img_path:
         print(f"Selected file: {img_path}")
-        db.add_image(img_path)
+        return img_path
 
 
 def edit_button_callback(id):

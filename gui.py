@@ -218,14 +218,14 @@ def add_card_window():
     add_image_frame.grid_columnconfigure(0, weight=1)
     add_image_label = ctk.CTkLabel(add_image_frame, text='Image', font=('Helvetica', 12, 'bold'), text_color='white')
     add_image_label.grid(column=0, row=0, padx=5, sticky='w')
-    add_image_button = ctk.CTkButton(add_image_frame, text='Select a File', command=lambda: logic.image_selection())
+    add_image_button = ctk.CTkButton(add_image_frame, text='Select a File', command=lambda: add_image_label.configure(text=logic.image_selection()))
     add_image_button.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
 
     confirm_add_button = ctk.CTkButton(add_window, text='Add', command=lambda: [init_add(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
                                                                                         add_subtype_entry, add_colour_checkbox_w, add_colour_checkbox_u,
                                                                                         add_colour_checkbox_b, add_colour_checkbox_r, add_colour_checkbox_g,
-                                                                                        add_rarity_entry, add_count_entry), add_window.destroy()])
+                                                                                        add_rarity_entry, add_count_entry, add_image_label), add_window.destroy()])
     confirm_add_button.grid(row=9, column=0, padx=10, pady=(5,10), sticky='nesw')
     add_window.grid_rowconfigure(9, weight=1)
 
@@ -234,7 +234,7 @@ def add_card_window():
 def init_add(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
             add_subtype_entry, add_colour_checkbox_w, add_colour_checkbox_u,
             add_colour_checkbox_b, add_colour_checkbox_r, add_colour_checkbox_g,
-            add_rarity_entry, add_count_entry):
+            add_rarity_entry, add_count_entry, add_image_label):
     add_data = {
         'name' : add_name_entry.get(),
         'cost' : add_cost_entry.get(),
@@ -249,16 +249,17 @@ def init_add(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
             'G' if add_colour_checkbox_g.get() else ''
         ],
         'rarity' : add_rarity_entry.get(),
-        'count' : add_count_entry.get()
+        'count' : add_count_entry.get(),
+        'img_path' : add_image_label.cget('text')
     }
 
     #remove empty strings from colour information 
     add_data['colour'] = [color for color in add_data['colour'] if color]
     add_data['colour'] = ''.join(add_data['colour'])
+    add_data['img_path'] = None if add_data == 'Image' else add_data['img_path']
 
     #merge colour values into a string
     add_data = {key: (value if value !='' else None) for key, value in add_data.items()}
-
     db.add_card(**add_data)
 
 #take name and filter settings from search bar and call display with search results
@@ -267,7 +268,7 @@ def init_search():
     'name' : namesearch.get(),
     'cmc' : cmc_filter.get(),
     'cost' : cost_filter.get(),
-    'type' : type_filter.get(),
+    'card_type' : type_filter.get(),
     'subtype' : subtype_filter.get(),
     'colour' : [
         'W' if colour_checkbox_w.get() else '',
@@ -284,7 +285,8 @@ def init_search():
     search_data['colour'] = ''.join(search_data['colour'])
     search_data = {key: (value if value !='' else None) for key, value in search_data.items()}
 
-    results = logic.card_search(**search_data)
+    print(f'Searching: {search_data}')
+    results = db.search_query_constructor(**search_data)
 
     print(f'Results {results}')
     display_results(results)

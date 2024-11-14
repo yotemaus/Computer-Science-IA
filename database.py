@@ -22,14 +22,9 @@ def create_tables():
                         subtype TEXT,
                         colour TEXT,
                         rarity TEXT,
-                        count INTEGER NOT NULL CHECK (count > 0)
+                        count INTEGER NOT NULL CHECK (count > 0),
+                        img_path TEXT
                     )''')    #create table and add card parameters, 'id' parameter used as uniqe identifier
-    
-    cursor.execute('''CREATE TABLE IF NOT EXISTS images(
-                        id INTEGER PRIMARY KEY,
-                        path TEXT,
-                        FOREIGN KEY (id) REFERENCES cards(id)
-                    )''') #images will be stored in a separate table using a foreign key to make fetchall() more efficient
     
     cursor.execute('''CREATE TABLE IF NOT EXISTS comments(
                         id INTEGER PRIMARY KEY,
@@ -39,27 +34,26 @@ def create_tables():
     
     connection.commit()
 
-def convert_to_blob(filename): #convert image to binary data for storage in database BLOB = Binary Large
-    with open(filename, 'rb') as img: #open image in binary mode
-        blob_data = img.read()
-    return blob_data 
-
-def add_card(name, cmc, cost, card_type, subtype, colour, rarity, count): #add a card to the database
+def add_card(name, cmc, cost, card_type, subtype, colour, rarity, count, img_path): #add a card to the database
     try: 
-        data_tuple = (name, cmc, cost, card_type, subtype, colour, rarity, count) 
+        data_tuple = (name, cmc, cost, card_type, subtype, colour, rarity, count)
         cursor.execute('INSERT INTO cards (name, cmc, cost, card_type, subtype, colour, rarity, count) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (data_tuple))
         connection.commit()
+        if img_path:
+            cursor.execute("SELECT id FROM cards ORDER BY id DESC")
+            new_id = str(cursor.fetchone()[0])
+            new_path = str(copy_path(img_path, new_id))
+            cursor.execute('UPDATE cards SET img_path = ? WHERE id = ?', (new_path, new_id))
+            connection.commit()
 
     except sqlite3.IntegrityError as e:
         print(f"There was an error adding the card: {e}")
 
-def add_image(path):
+def copy_path(img_path, new_id):
     try:
-        cursor.execute("SELECT id FROM cards ORDER BY id DESC")
-        new_id = cursor.fetchone()[0]
-        shutil.copy(path, image_dir_path/new_id)
-        cursor.execute('INSERT INTO IMAGES (id, image) VALUES (?, ?)', (new_id, path))
-        connection.commit()
+        new_path = image_dir_path/new_id
+        shutil.copy(img_path, new_path)
+        return new_path
 
     except sqlite3.IntegrityError as e:
         print(f'There was an error adding the image: {e}')
@@ -108,20 +102,6 @@ def edit_query_constructor(id, name=None, cmc=None, cost=None, card_type=None, s
             print(f'There was an error updating the card: {e}')
     else:
         print('No parameters need updating')
-
-def edit_image(id, image): #swap image with new path
-    cursor.execute('SELECT 1 FROM imaged WHERE id = ?', (id,))
-    if cursor.fetchone() is None:
-        print(f'Image with card id {id} not found in database.')
-        return
-    
-    try:
-        blob_data = convert_to_blob(image)
-        cursor.execute('UPDATE images SET image = ? WHERE id ?', (blob_data, id))
-        connection.commit()
-
-    except sqlite3.IntegrityError as e:
-        print(f"There was an error updating the image {e}")
 
 def search_query_constructor(name=None, cmc=None, cost=None, card_type=None, subtype=None, colour=None, rarity=None, sort_by=None):
     search_by = []
