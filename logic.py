@@ -12,7 +12,7 @@ def card_search(name, cmc, cost, type, subtype, colour, rarity, sort_by):
     print(f'Searching {(name, cmc, cost, type, subtype, colour, rarity, sort_by)}')
     result = db.search_query_constructor(name, cmc, cost, type, subtype, colour, rarity, sort_by)
     return result
-
+ 
 def image_selection():
     img_path = filedialog.askopenfilename(title='select a file: ', filetypes=[("Images", ("*.png", "*.jpg", "*.jpeg"))])
     if img_path:

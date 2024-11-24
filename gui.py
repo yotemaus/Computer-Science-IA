@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from PIL import Image
 import database as db
 import logic
 
@@ -283,6 +284,8 @@ def init_search():
 
     search_data['colour'] = [color for color in search_data['colour'] if color]
     search_data['colour'] = ''.join(search_data['colour'])
+    search_data['card_type'] = None if 'All Types' else search_data['card_type']
+    search_data['rarity'] = None if 'All Rarities' else search_data['rarity']
     search_data = {key: (value if value !='' else None) for key, value in search_data.items()}
 
     print(f'Searching: {search_data}')
@@ -298,82 +301,99 @@ def clear_results():
     for widget in grid_scroll.winfo_children():
         widget.destroy()
 
-#card display frames inside scrollable window
-def display_results(results): #results is a list of tuples passed by the card search function
-    clear_results()
+def dlist(results):
+        for i, row in enumerate(results):
+            id, name, cmc, cost, type, subtype, colour, rarity, count, _ = [
+                        "N/A" if value is None else value for value in row
+                    ]
+            
+            list_card_frame = ctk.CTkFrame(list_scroll, fg_color='blue')
+            list_card_frame.grid(row=i, column=0, pady=0, sticky='new')
+            list_card_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)  # Distribute column weight
+
+            # Name Frame (list)
+            name_frame_display = ctk.CTkFrame(list_card_frame)
+            name_frame_display.grid(row=0, column=0, padx=(5, 2.5), pady=5, sticky='ew')  # remove padding  around frame
+            name_frame_display.grid_columnconfigure(0, weight=1) #alligns the text in the center of each frame
+            name_label = ctk.CTkLabel(name_frame_display, text=name, font=('Helvetica', 14, 'bold'))
+            name_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')  # Ensure no padding for the label
+
+            #Mana Cost Frame (list)
+            cost_frame_display = ctk.CTkFrame(list_card_frame)
+            cost_frame_display.grid(row=0, column=1, padx=2.5, pady=5, sticky='ew')
+            cost_frame_display.grid_columnconfigure(0, weight=1)  
+            cost_label = ctk.CTkLabel(cost_frame_display, text=f'Cost: {cost}', font=('Helvetica', 14, 'bold'))
+            cost_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
+
+            #CMC Frame (list)
+            cmc_frame_display = ctk.CTkFrame(list_card_frame)
+            cmc_frame_display.grid(row=0, column=2, padx=2.5, pady=5, sticky='ew')
+            cmc_frame_display.grid_columnconfigure(0, weight=1)
+            cmc_label = ctk.CTkLabel(cmc_frame_display, text=f'CMC: {cmc}', font=('Helvetica', 14, 'bold'))
+            cmc_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
+
+            # Type Frame (list)
+            type_frame_display = ctk.CTkFrame(list_card_frame)
+            type_frame_display.grid(row=0, column=3, padx=2.5, pady=5, sticky='ew')
+            type_frame_display.grid_columnconfigure(0, weight=1)  
+            type_label = ctk.CTkLabel(type_frame_display, text=type, font=('Helvetica', 14, 'bold'))
+            type_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
+
+            # Subtype Frame (list)
+            subtype_frame_display = ctk.CTkFrame(list_card_frame)
+            subtype_frame_display.grid(row=0, column=4, padx=2.5, pady=5, sticky='ew')
+            subtype_frame_display.grid_columnconfigure(0, weight=1) 
+            subtype_label = ctk.CTkLabel(subtype_frame_display, text=subtype, font=('Helvetica', 14, 'bold'))
+            subtype_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
+
+            # Colour Frame (list)
+            colour_frame_display = ctk.CTkFrame(list_card_frame)
+            colour_frame_display.grid(row=0, column=5, padx=2.5, pady=5, sticky='ew')
+            colour_frame_display.grid_columnconfigure(0, weight=1) 
+            colour_label = ctk.CTkLabel(colour_frame_display, text=colour, font=('Helvetica', 14, 'bold'))
+            colour_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
+
+            # Rarity Frame (list)
+            rarity_frame_display = ctk.CTkFrame(list_card_frame)
+            rarity_frame_display.grid(row=0, column=6, padx=2.5, pady=5, sticky='ew')
+            rarity_frame_display.grid_columnconfigure(0, weight=1) 
+            rarity_label = ctk.CTkLabel(rarity_frame_display, text=rarity, font=('Helvetica', 14, 'bold'))
+            rarity_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
+
+            # Count Frame (list)
+            count_frame_display = ctk.CTkFrame(list_card_frame)
+            count_frame_display.grid(row=0, column=7, padx=2.5, pady=5, sticky='ew')
+            count_frame_display.grid_columnconfigure(0, weight=1) 
+            count_label = ctk.CTkLabel(count_frame_display, text=f"Quantity: {count}", font=('Helvetica', 14, 'bold'))
+            count_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
+            
+            # Edit Button (list)
+            edit_button = ctk.CTkButton(list_card_frame, text='Edit', width=40, command=lambda id=id: edit_window(id)) #the lambda function is used to remember the id for ediitng
+            edit_button.grid(row=0, column=8, padx=(0, 5), pady=5, sticky='e')
+
+def dgrid(results):
     for i, row in enumerate(results):
         
-        id, name, cmc, cost, type, subtype, colour, rarity, count = [
+        id, name, cmc, cost, type, subtype, colour, rarity, count, img_path = [
                     "N/A" if value is None else value for value in row
                 ]
         
-        list_card_frame = ctk.CTkFrame(list_scroll, fg_color='blue')
-        list_card_frame.grid(row=i, column=0, pady=0, sticky='new')
-        list_card_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)  # Distribute column weight
-
-        # Name Frame (list)
-        name_frame_display = ctk.CTkFrame(list_card_frame)
-        name_frame_display.grid(row=0, column=0, padx=(5, 2.5), pady=5, sticky='ew')  # remove padding around frame
-        name_frame_display.grid_columnconfigure(0, weight=1) #alligns the text in the center of each frame
-        name_label = ctk.CTkLabel(name_frame_display, text=name, font=('Helvetica', 14, 'bold'))
-        name_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')  # Ensure no padding for the label
-
-        #Mana Cost Frame (list)
-        cost_frame_display = ctk.CTkFrame(list_card_frame)
-        cost_frame_display.grid(row=0, column=1, padx=2.5, pady=5, sticky='ew')
-        cost_frame_display.grid_columnconfigure(0, weight=1)  
-        cost_label = ctk.CTkLabel(cost_frame_display, text=f'Cost: {cost}', font=('Helvetica', 14, 'bold'))
-        cost_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
-
-        #CMC Frame (list)
-        cmc_frame_display = ctk.CTkFrame(list_card_frame)
-        cmc_frame_display.grid(row=0, column=2, padx=2.5, pady=5, sticky='ew')
-        cmc_frame_display.grid_columnconfigure(0, weight=1)
-        cmc_label = ctk.CTkLabel(cmc_frame_display, text=f'CMC: {cmc}', font=('Helvetica', 14, 'bold'))
-        cmc_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
-
-        # Type Frame (list)
-        type_frame_display = ctk.CTkFrame(list_card_frame)
-        type_frame_display.grid(row=0, column=3, padx=2.5, pady=5, sticky='ew')
-        type_frame_display.grid_columnconfigure(0, weight=1)  
-        type_label = ctk.CTkLabel(type_frame_display, text=type, font=('Helvetica', 14, 'bold'))
-        type_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
-
-        # Subtype Frame (list)
-        subtype_frame_display = ctk.CTkFrame(list_card_frame)
-        subtype_frame_display.grid(row=0, column=4, padx=2.5, pady=5, sticky='ew')
-        subtype_frame_display.grid_columnconfigure(0, weight=1) 
-        subtype_label = ctk.CTkLabel(subtype_frame_display, text=subtype, font=('Helvetica', 14, 'bold'))
-        subtype_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
-
-        # Colour Frame (list)
-        colour_frame_display = ctk.CTkFrame(list_card_frame)
-        colour_frame_display.grid(row=0, column=5, padx=2.5, pady=5, sticky='ew')
-        colour_frame_display.grid_columnconfigure(0, weight=1) 
-        colour_label = ctk.CTkLabel(colour_frame_display, text=colour, font=('Helvetica', 14, 'bold'))
-        colour_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
-
-        # Rarity Frame (list)
-        rarity_frame_display = ctk.CTkFrame(list_card_frame)
-        rarity_frame_display.grid(row=0, column=6, padx=2.5, pady=5, sticky='ew')
-        rarity_frame_display.grid_columnconfigure(0, weight=1) 
-        rarity_label = ctk.CTkLabel(rarity_frame_display, text=rarity, font=('Helvetica', 14, 'bold'))
-        rarity_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
-
-        # Count Frame (list)
-        count_frame_display = ctk.CTkFrame(list_card_frame)
-        count_frame_display.grid(row=0, column=7, padx=2.5, pady=5, sticky='ew')
-        count_frame_display.grid_columnconfigure(0, weight=1) 
-        count_label = ctk.CTkLabel(count_frame_display, text=f"Quantity: {count}", font=('Helvetica', 14, 'bold'))
-        count_label.grid(row=0, column=0, padx=5, pady=0, sticky='ew')
+        image = Image.open(img_path)
+        card_image = ctk.CTkImage(image)
         
-        # Edit Button (list)
-        edit_button = ctk.CTkButton(list_card_frame, text='Edit', width=40, command=lambda id=id: edit_window(id)) #the lambda function is used to remember the id for ediitng
-        edit_button.grid(row=0, column=8, padx=(0, 5), pady=5, sticky='e')
-
-        #grid view card frame
-        grid_card_frame = ctk.CTkFrame(grid_scroll)
+        grid_card_frame = ctk.CTkFrame(grid_scroll, fg_color='blue')
         grid_card_frame.grid(row=i // 4, column=i % 4, pady=5, padx=5, sticky='ew')
+        grid_card_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+
+        image_display = ctk.CTkLabel(grid_card_frame)
+        image_display.grid(row=0, column=0, pady=5, padx=5, sticky='ew')
+
+#card display frames inside scrollable window
+def display_results(results): #results is a list of tuples passed by the card search function
+    clear_results()
+    dlist(results)
+    dgrid(results)
+
             
 def edit_window(id):
     data = db.fetch_by_id(id)

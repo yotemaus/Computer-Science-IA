@@ -42,16 +42,17 @@ def add_card(name, cmc, cost, card_type, subtype, colour, rarity, count, img_pat
         if img_path:
             cursor.execute("SELECT id FROM cards ORDER BY id DESC")
             new_id = str(cursor.fetchone()[0])
-            new_path = str(copy_path(img_path, new_id))
+            file_extention = img_path.split('.')[-1] if '.' in img_path else None
+            new_path = str(copy_path(img_path, new_id, file_extention))
             cursor.execute('UPDATE cards SET img_path = ? WHERE id = ?', (new_path, new_id))
             connection.commit()
 
     except sqlite3.IntegrityError as e:
         print(f"There was an error adding the card: {e}")
 
-def copy_path(img_path, new_id):
+def copy_path(img_path, new_id, file_extention):
     try:
-        new_path = image_dir_path/new_id
+        new_path = image_dir_path/(new_id + f'.{file_extention}')
         shutil.copy(img_path, new_path)
         return new_path
 
@@ -142,6 +143,7 @@ def search_query_constructor(name=None, cmc=None, cost=None, card_type=None, sub
     if search_by:
         try:
             cursor.execute(f"SELECT * FROM cards WHERE {' AND '.join(search_by)} ORDER BY {order}", tuple(param))
+            print(f"SELECT * FROM cards WHERE {' AND '.join(search_by)} ORDER BY {order}", tuple(param))
             return cursor.fetchall()
 
         except sqlite3.IntegrityError as e:
