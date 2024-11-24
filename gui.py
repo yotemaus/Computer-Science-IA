@@ -8,7 +8,7 @@ ctk.set_default_color_theme("blue")
 
 app = ctk.CTk()
 app.title("Database Manager")
-app.geometry("1000x400")
+app.geometry("1200x700")
 
 #search bar and add button
 title = ctk.CTkLabel(app, text='Your Cards', font=('Helvetica', 36, 'bold'), text_color='white')
@@ -293,6 +293,9 @@ def init_search():
 
     print(f'Results {results}')
     display_results(results)
+
+    print(f'Width: {app.winfo_width()}')
+    print(f'Height: {app.winfo_height()}')
     
 
 def clear_results():
@@ -378,15 +381,22 @@ def dgrid(results):
                     "N/A" if value is None else value for value in row
                 ]
         
-        image = Image.open(img_path)
-        card_image = ctk.CTkImage(image)
-        
         grid_card_frame = ctk.CTkFrame(grid_scroll, fg_color='blue')
         grid_card_frame.grid(row=i // 4, column=i % 4, pady=5, padx=5, sticky='ew')
         grid_card_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
-        image_display = ctk.CTkLabel(grid_card_frame)
-        image_display.grid(row=0, column=0, pady=5, padx=5, sticky='ew')
+        if img_path != "N/A":
+            image = Image.open(img_path)
+            card_image = ctk.CTkImage(image, size=(250, 350))
+
+            image_display = ctk.CTkLabel(grid_card_frame, image=card_image)
+            image_display.grid(row=0, column=0, columnspan=2, pady=(5,0), padx=5, sticky='ew')
+
+        grid_name_label = ctk.CTkLabel(grid_card_frame, text=name, font=('Helvetica', 14, 'bold'))
+        grid_name_label.grid(row=2, column=0, padx=5, pady=(0,2), sticky='w')
+
+        edit_button = ctk.CTkButton(grid_card_frame, text='Edit', width=40, command=lambda id=id: edit_window(id)) #the lambda function is used to remember the id for ediitng
+        edit_button.grid(row=2, column=1, padx=(0, 5), pady=5, sticky='e')
 
 #card display frames inside scrollable window
 def display_results(results): #results is a list of tuples passed by the card search function
@@ -523,3 +533,4 @@ app.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 app.grid_rowconfigure(5, weight=1)
 
 app.mainloop()
+

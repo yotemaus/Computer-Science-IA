@@ -143,7 +143,6 @@ def search_query_constructor(name=None, cmc=None, cost=None, card_type=None, sub
     if search_by:
         try:
             cursor.execute(f"SELECT * FROM cards WHERE {' AND '.join(search_by)} ORDER BY {order}", tuple(param))
-            print(f"SELECT * FROM cards WHERE {' AND '.join(search_by)} ORDER BY {order}", tuple(param))
             return cursor.fetchall()
 
         except sqlite3.IntegrityError as e:
@@ -165,3 +164,4 @@ def fetch_by_id(id):
         row[5] = tuple(row[5])
     return row
 
+create_tables()
