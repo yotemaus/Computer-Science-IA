@@ -34,7 +34,7 @@ def create_tables():
     
     connection.commit()
 
-def add_card(name, cmc, cost, card_type, subtype, colour, rarity, count, img_path): #add a card to the database
+def add_query_constructor(name, cmc, cost, card_type, subtype, colour, rarity, count, img_path): #add a card to the database
     try: 
         data_tuple = (name, cmc, cost, card_type, subtype, colour, rarity, count)
         cursor.execute('INSERT INTO cards (name, cmc, cost, card_type, subtype, colour, rarity, count) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (data_tuple))
@@ -52,19 +52,25 @@ def add_card(name, cmc, cost, card_type, subtype, colour, rarity, count, img_pat
 
 def copy_path(img_path, new_id, file_extention):
     try:
-        new_path = image_dir_path/(new_id + f'.{file_extention}')
-        shutil.copy(img_path, new_path)
-        return new_path
+        new_path = image_dir_path/(f'{new_id}.{file_extention}')
+        print(new_path)
+        print(img_path)
+        if str(new_path) != str(img_path):
+            shutil.copy(img_path, new_path)
+            return new_path
+        else:
+            return img_path
 
     except sqlite3.IntegrityError as e:
         print(f'There was an error adding the image: {e}')
 
-def edit_query_constructor(id, name=None, cmc=None, cost=None, card_type=None, subtype=None, colour=None, rarity=None, count=None):
+def edit_query_constructor(id, name=None, cmc=None, cost=None, card_type=None, subtype=None, colour=None, rarity=None, count=None, img_path=None):
     cursor.execute('SELECT 1 FROM cards WHERE id = ?', (id,)) #check if the card exists
-    if cursor.fetchone() is None:
+    temp = cursor.fetchone()
+    if temp is None:
         print(f'Card with id {id} not found in database.')
         return #skips the rest of the function if card is not found in the database
-    
+
     update_cols = [] #update which columns?
     new_data = [] #replace with what?
 
@@ -92,6 +98,12 @@ def edit_query_constructor(id, name=None, cmc=None, cost=None, card_type=None, s
     if count is not None:
         update_cols.append("count = ?")
         new_data.append(count)
+    if img_path is not None and img_path != 'Image':
+        update_cols.append("img_path = ?")
+        file_extention = img_path.split('.')[-1] if '.' in img_path else None
+        new_path = str(copy_path(img_path, id, file_extention))
+        new_data.append(img_path)
+
 
     #proceed if there are columns to be updated
     if update_cols:
@@ -158,7 +170,7 @@ def delete_card(id): #delete a card from the table by its id
     connection.commit()
 
 def fetch_by_id(id):
-    cursor.execute('SELECT name, cmc, cost, card_type, subtype, colour, rarity, count FROM cards WHERE id = ?', (id,))
+    cursor.execute('SELECT name, cmc, cost, card_type, subtype, colour, rarity, count, img_path FROM cards WHERE id = ?', (id,))
     row = list(cursor.fetchone())
     if row[5]:
         row[5] = tuple(row[5])

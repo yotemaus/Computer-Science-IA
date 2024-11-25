@@ -261,7 +261,7 @@ def init_add(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
 
     #merge colour values into a string
     add_data = {key: (value if value !='' else None) for key, value in add_data.items()}
-    db.add_card(**add_data)
+    db.add_query_constructor(**add_data)
 
 #take name and filter settings from search bar and call display with search results
 def init_search():
@@ -314,7 +314,7 @@ def dlist(results):
             list_card_frame.grid(row=i, column=0, pady=0, sticky='new')
             list_card_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)  # Distribute column weight
 
-            # Name Frame (list)
+            # Name Frame (list)c
             name_frame_display = ctk.CTkFrame(list_card_frame)
             name_frame_display.grid(row=0, column=0, padx=(5, 2.5), pady=5, sticky='ew')  # remove padding  around frame
             name_frame_display.grid_columnconfigure(0, weight=1) #alligns the text in the center of each frame
@@ -375,28 +375,36 @@ def dlist(results):
             edit_button.grid(row=0, column=8, padx=(0, 5), pady=5, sticky='e')
 
 def dgrid(results):
+    print(results)
     for i, row in enumerate(results):
         
         id, name, cmc, cost, type, subtype, colour, rarity, count, img_path = [
                     "N/A" if value is None else value for value in row
                 ]
         
-        grid_card_frame = ctk.CTkFrame(grid_scroll, fg_color='blue')
+        grid_card_frame = ctk.CTkFrame(grid_scroll, fg_color='grey')
         grid_card_frame.grid(row=i // 4, column=i % 4, pady=5, padx=5, sticky='ew')
-        grid_card_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        grid_card_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
         if img_path != "N/A":
             image = Image.open(img_path)
             card_image = ctk.CTkImage(image, size=(250, 350))
 
-            image_display = ctk.CTkLabel(grid_card_frame, image=card_image)
-            image_display.grid(row=0, column=0, columnspan=2, pady=(5,0), padx=5, sticky='ew')
+            image_display = ctk.CTkLabel(grid_card_frame, image=card_image, text='')
+            image_display.grid(row=0, column=0, columnspan=3, pady=(5,0), padx=5, sticky='ew')
 
-        grid_name_label = ctk.CTkLabel(grid_card_frame, text=name, font=('Helvetica', 14, 'bold'))
-        grid_name_label.grid(row=2, column=0, padx=5, pady=(0,2), sticky='w')
+        grid_name_frame = ctk.CTkFrame(grid_card_frame)
+        grid_name_frame.grid(row=2, column=0, padx=5, pady=(2, 5), sticky='ew')
+        grid_name_label = ctk.CTkLabel(grid_name_frame, text=name, font=('Helvetica', 14, 'bold'))
+        grid_name_label.grid(row=0, column=0, padx=5, pady=(0), sticky='w')
+
+        grid_count_frame = ctk.CTkFrame(grid_card_frame)
+        grid_count_frame.grid(row=2, column=1, pady=(2, 5), sticky='ew')
+        grid_count_label = ctk.CTkLabel(grid_count_frame, text=count)
+        grid_count_label.grid(row=0, column=0, padx=5, sticky='ew')
 
         edit_button = ctk.CTkButton(grid_card_frame, text='Edit', width=40, command=lambda id=id: edit_window(id)) #the lambda function is used to remember the id for ediitng
-        edit_button.grid(row=2, column=1, padx=(0, 5), pady=5, sticky='e')
+        edit_button.grid(row=2, column=2, padx=(0, 5), pady=(2, 5), sticky='e')
 
 #card display frames inside scrollable window
 def display_results(results): #results is a list of tuples passed by the card search function
@@ -408,7 +416,8 @@ def display_results(results): #results is a list of tuples passed by the card se
 def edit_window(id):
     data = db.fetch_by_id(id)
     print(data)
-    name, cmc, cost, type, subtype, colours, rarity, count = data 
+    name, cmc, cost, type, subtype, colours, rarity, count, img_path = ['' if value is None else str(value) for value in data]
+
     edit_window = ctk.CTkToplevel()
     edit_window.geometry('430x730')
     edit_window.grid_columnconfigure((0,1), weight=1)
@@ -507,16 +516,16 @@ def edit_window(id):
     edit_image_frame = ctk.CTkFrame(edit_window)
     edit_image_frame.grid(row=8, column=0, padx=10, pady=5, sticky='ew', columnspan=2)
     edit_image_frame.grid_columnconfigure(0, weight=1)
-    edit_image_label = ctk.CTkLabel(edit_image_frame, text='Image', font=('Helvetica', 12, 'bold'), text_color='white')
+    edit_image_label = ctk.CTkLabel(edit_image_frame, text=img_path, font=('Helvetica', 12, 'bold'), text_color='white')
     edit_image_label.grid(column=0, row=0, padx=5, sticky='w')
-    edit_image_button = ctk.CTkButton(edit_image_frame, text='Select a File', command=lambda: logic.image_selection())
+    edit_image_button = ctk.CTkButton(edit_image_frame, text='Select a File', command=lambda: edit_image_label.configure(text=logic.image_selection()))
     edit_image_button.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
 
-    confirm_edit_button = ctk.CTkButton(edit_window, text='Edit', command=lambda: [init_edit(edit_name_entry, edit_cost_entry, edit_cmc_entry, edit_type_entry,
+    confirm_edit_button = ctk.CTkButton(edit_window, text='Edit', command=lambda: [init_edit(id, edit_name_entry, edit_cost_entry, edit_cmc_entry, edit_type_entry,
                                                                                         edit_subtype_entry, edit_colour_checkbox_w, edit_colour_checkbox_u,
                                                                                         edit_colour_checkbox_b, edit_colour_checkbox_r, edit_colour_checkbox_g,
-                                                                                        edit_rarity_entry, edit_count_entry), edit_window.destroy()])
+                                                                                        edit_rarity_entry, edit_count_entry, edit_image_label), edit_window.destroy()])
     confirm_edit_button.grid(row=9, column=1, padx=(5, 10), pady=(5,10), sticky='nesw')
 
     delete_card_button = ctk.CTkButton(edit_window, text='Delete Card', fg_color='#cf0000', hover_color='#750000', command=lambda: [db.delete_card(id), edit_window.destroy()])
@@ -524,8 +533,36 @@ def edit_window(id):
 
     edit_window.grid_rowconfigure(9, weight=1)
 
-def init_edit(*args):
-    pass
+def init_edit(id, edit_name_entry, edit_cost_entry, edit_cmc_entry, edit_type_entry,
+            edit_subtype_entry, edit_colour_checkbox_w, edit_colour_checkbox_u,
+            edit_colour_checkbox_b, edit_colour_checkbox_r, edit_colour_checkbox_g,
+            edit_rarity_entry, edit_count_entry, edit_image_label):
+    edit_data = {
+        'name' : edit_name_entry.get(),
+        'cost' : edit_cost_entry.get(),
+        'cmc' : edit_cmc_entry.get(),
+        'card_type' : edit_type_entry.get(),
+        'subtype' : edit_subtype_entry.get(),
+        'colour' : [
+            'W' if edit_colour_checkbox_w.get() else '',
+            'U' if edit_colour_checkbox_u.get() else '',
+            'B' if edit_colour_checkbox_b.get() else '',
+            'R' if edit_colour_checkbox_r.get() else '',
+            'G' if edit_colour_checkbox_g.get() else ''
+        ],
+        'rarity' : edit_rarity_entry.get(),
+        'count' : edit_count_entry.get(),
+        'img_path' : edit_image_label.cget('text')
+    }
+
+    #remove empty strings from colour information 
+    edit_data['colour'] = [color for color in edit_data['colour'] if color]
+    edit_data['colour'] = ''.join(edit_data['colour'])
+    edit_data['img_path'] = None if edit_data == 'Image' else edit_data['img_path']
+
+    #merge colour values into a string
+    edit_data = {key: (value if value !='' else None) for key, value in edit_data.items()}
+    db.edit_query_constructor(id, **edit_data)
 
 
 # set grid weights for dynamic resizing
