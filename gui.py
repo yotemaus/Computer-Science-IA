@@ -131,7 +131,7 @@ list_scroll.grid(row=0, column=0, sticky='nesw')
 list_scroll.grid_columnconfigure(0, weight=1)
 
 #card display window for grid view
-grid_scroll = ctk.CTkScrollableFrame(grid, fg_color='red')
+grid_scroll = ctk.CTkScrollableFrame(grid)
 grid_scroll.grid(row=0, column=0, sticky='nesw')
 grid_scroll.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
@@ -226,7 +226,9 @@ def add_card_window():
     confirm_add_button = ctk.CTkButton(add_window, text='Add', command=lambda: [init_add(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
                                                                                         add_subtype_entry, add_colour_checkbox_w, add_colour_checkbox_u,
                                                                                         add_colour_checkbox_b, add_colour_checkbox_r, add_colour_checkbox_g,
-                                                                                        add_rarity_entry, add_count_entry, add_image_label), add_window.destroy()])
+                                                                                        add_rarity_entry, add_count_entry, add_image_label), 
+                                                                                add_window.destroy(), 
+                                                                                init_search()])
     confirm_add_button.grid(row=9, column=0, padx=10, pady=(5,10), sticky='nesw')
     add_window.grid_rowconfigure(9, weight=1)
 
@@ -284,19 +286,16 @@ def init_search():
 
     search_data['colour'] = [color for color in search_data['colour'] if color]
     search_data['colour'] = ''.join(search_data['colour'])
-    search_data['card_type'] = None if 'All Types' else search_data['card_type']
-    search_data['rarity'] = None if 'All Rarities' else search_data['rarity']
-    search_data = {key: (value if value !='' else None) for key, value in search_data.items()}
+    search_data['card_type'] = None if search_data['card_type'] == 'All Types' else search_data['card_type']
+    search_data['rarity'] = None if search_data['rarity'] == 'All Rarities' else search_data['rarity']
+    search_data = {key: (None if value == '' else value) for key, value in search_data.items()}
+
 
     print(f'Searching: {search_data}')
     results = db.search_query_constructor(**search_data)
 
     print(f'Results {results}')
     display_results(results)
-
-    print(f'Width: {app.winfo_width()}')
-    print(f'Height: {app.winfo_height()}')
-    
 
 def clear_results():
     for widget in list_scroll.winfo_children():
@@ -310,11 +309,11 @@ def dlist(results):
                         "N/A" if value is None else value for value in row
                     ]
             
-            list_card_frame = ctk.CTkFrame(list_scroll, fg_color='blue')
+            list_card_frame = ctk.CTkFrame(list_scroll, fg_color='#363636')
             list_card_frame.grid(row=i, column=0, pady=0, sticky='new')
             list_card_frame.grid_columnconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)  # Distribute column weight
 
-            # Name Frame (list)c
+            # Name Frame (list)
             name_frame_display = ctk.CTkFrame(list_card_frame)
             name_frame_display.grid(row=0, column=0, padx=(5, 2.5), pady=5, sticky='ew')  # remove padding  around frame
             name_frame_display.grid_columnconfigure(0, weight=1) #alligns the text in the center of each frame
@@ -375,14 +374,13 @@ def dlist(results):
             edit_button.grid(row=0, column=8, padx=(0, 5), pady=5, sticky='e')
 
 def dgrid(results):
-    print(results)
     for i, row in enumerate(results):
-        
+
         id, name, cmc, cost, type, subtype, colour, rarity, count, img_path = [
                     "N/A" if value is None else value for value in row
                 ]
-        
-        grid_card_frame = ctk.CTkFrame(grid_scroll, fg_color='grey')
+        print(name)
+        grid_card_frame = ctk.CTkFrame(grid_scroll, fg_color='#363636')
         grid_card_frame.grid(row=i // 4, column=i % 4, pady=5, padx=5, sticky='ew')
         grid_card_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
@@ -394,17 +392,28 @@ def dgrid(results):
             image_display.grid(row=0, column=0, columnspan=3, pady=(5,0), padx=5, sticky='ew')
 
         grid_name_frame = ctk.CTkFrame(grid_card_frame)
-        grid_name_frame.grid(row=2, column=0, padx=5, pady=(2, 5), sticky='ew')
+        grid_name_frame.grid(row=2, column=0, padx=5, pady=(4, 5), sticky='ew')
         grid_name_label = ctk.CTkLabel(grid_name_frame, text=name, font=('Helvetica', 14, 'bold'))
-        grid_name_label.grid(row=0, column=0, padx=5, pady=(0), sticky='w')
+        grid_name_label.grid(row=0, column=0, padx=5, sticky='w')
 
         grid_count_frame = ctk.CTkFrame(grid_card_frame)
-        grid_count_frame.grid(row=2, column=1, pady=(2, 5), sticky='ew')
+        grid_count_frame.grid(row=2, column=1, pady=(4, 5), sticky='w')
         grid_count_label = ctk.CTkLabel(grid_count_frame, text=count)
         grid_count_label.grid(row=0, column=0, padx=5, sticky='ew')
 
         edit_button = ctk.CTkButton(grid_card_frame, text='Edit', width=40, command=lambda id=id: edit_window(id)) #the lambda function is used to remember the id for ediitng
         edit_button.grid(row=2, column=2, padx=(0, 5), pady=(2, 5), sticky='e')
+    placeholders(i+1)
+
+def placeholders(shown): #to maintain the grids structure
+    if shown % 4 != 0:
+        count = 4 - shown % 4
+        current_row = shown // 4
+        start_col = shown % 4
+        for i in range(count):
+            grid_card_frame = ctk.CTkFrame(grid_scroll, width=260, height=390)
+            grid_card_frame.grid(row=current_row, column=start_col+i, pady=5, padx=5, sticky='ew')
+
 
 #card display frames inside scrollable window
 def display_results(results): #results is a list of tuples passed by the card search function
@@ -525,10 +534,12 @@ def edit_window(id):
     confirm_edit_button = ctk.CTkButton(edit_window, text='Edit', command=lambda: [init_edit(id, edit_name_entry, edit_cost_entry, edit_cmc_entry, edit_type_entry,
                                                                                         edit_subtype_entry, edit_colour_checkbox_w, edit_colour_checkbox_u,
                                                                                         edit_colour_checkbox_b, edit_colour_checkbox_r, edit_colour_checkbox_g,
-                                                                                        edit_rarity_entry, edit_count_entry, edit_image_label), edit_window.destroy()])
+                                                                                        edit_rarity_entry, edit_count_entry, edit_image_label),
+                                                                                        edit_window.destroy(),
+                                                                                        init_search()])
     confirm_edit_button.grid(row=9, column=1, padx=(5, 10), pady=(5,10), sticky='nesw')
 
-    delete_card_button = ctk.CTkButton(edit_window, text='Delete Card', fg_color='#cf0000', hover_color='#750000', command=lambda: [db.delete_card(id), edit_window.destroy()])
+    delete_card_button = ctk.CTkButton(edit_window, text='Delete Card', fg_color='#cf0000', hover_color='#750000', command=lambda: [db.delete_card(id), edit_window.destroy(), init_search()])
     delete_card_button.grid(row=9, column=0, padx=(10, 5), pady=(5,10), sticky='nesw')
 
     edit_window.grid_rowconfigure(9, weight=1)
