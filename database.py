@@ -180,6 +180,5 @@ def clean_images(): #removes any images that are not linked to an exsiting card 
             file.unlink()
             print(f'Deleted {file}')
 
-
 create_tables()
 clean_images()

@@ -586,4 +586,3 @@ app.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 app.grid_rowconfigure(5, weight=1)
 
 app.mainloop()
-
