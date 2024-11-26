@@ -7,6 +7,8 @@ data_dir_path = script_directory/'data'
 data_dir_path.mkdir(exist_ok=True)
 image_dir_path = data_dir_path/'images'
 image_dir_path.mkdir(exist_ok=True)
+api_temp_path = data_dir_path/'api_saved_images'
+api_temp_path.mkdir(exist_ok=True)
 
 connection = sqlite3.connect(f'{data_dir_path}/cards.db')
 connection.execute('PRAGMA foreign_keys = 1;')
@@ -169,7 +171,7 @@ def fetch_by_id(id):
         row[5] = tuple(row[5])
     return row
 
-def clean_images(): #removes any images that are not linked to an exsiting card id
+def clean_images(): #removes any images that are not linked to an exsiting card id and or no longer is use by automatic adding system
     valid_files = []
     cursor.execute('SELECT id FROM cards')
     for id in cursor.fetchall():
@@ -179,6 +181,22 @@ def clean_images(): #removes any images that are not linked to an exsiting card 
         if file.is_file() and file.stem not in valid_files:
             file.unlink()
             print(f'Deleted {file}')
+
+    for file in api_temp_path.iterdir():
+        if file.is_file():
+            file.unlink()
+            print(f'Deleted {file}')
+
+def api_image_file(data, cardname, path=api_temp_path):
+    try:
+        filename = f'{cardname.replace(' ', '_').replace('/', '_')}.jpg'
+        img_path = api_temp_path/filename
+        with open(img_path, 'wb') as file:
+            file.write(data)
+        return img_path
+    
+    except Exception as e:
+        print(f'Failed to save image: {e}')
 
 create_tables()
 clean_images()

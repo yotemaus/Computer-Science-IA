@@ -296,6 +296,8 @@ def fill_add_fields(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entr
     countvar = ctk.StringVar(value='1')
     add_count_entry.configure(textvariable=countvar)
 
+    add_image_label.configure(text=str(data['img_path'])) # type: ignore
+
 
 #passing parameters to the databse add function
 def init_add(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
@@ -648,5 +650,7 @@ def image_selection():
 # set grid weights for dynamic resizing
 app.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
 app.grid_rowconfigure(5, weight=1)
+
+init_search()
 
 app.mainloop()

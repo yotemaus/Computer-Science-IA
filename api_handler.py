@@ -1,5 +1,5 @@
 import requests
-import copy
+from database import api_image_file
 
 def search_card(cardname): #this method fetches card details from the scryfall database based on the cards exact name
     base_url = "https://api.scryfall.com/cards/named"
@@ -19,6 +19,16 @@ def search_card(cardname): #this method fetches card details from the scryfall d
             'rarity' : card_data['rarity'],
         }
 
+        image_url = card_data.get('image_uris', {}).get('normal', None)
+        if not image_url:
+            if 'card_faces' in card_data:
+                image_url = card_data['card_faces'][0].get('image_uris', {}).get('Normal', None)
+            else:
+                image_url = None
+        
+        img_path = save_image(image_url, cardname)
+        output['img_path'] = img_path
+
         print(clean_data(output))
         return clean_data(output)
 
@@ -26,6 +36,16 @@ def search_card(cardname): #this method fetches card details from the scryfall d
         print(f'An error occured: {e}')
     except KeyError as e:
         print(f'Unexpected data structure: Missing key {e}')
+
+def save_image(image_url, cardname):
+    try:
+        response = requests.get(image_url, stream=True)
+        response.raise_for_status()
+        img_path = api_image_file(response.content, cardname)
+        return img_path
+
+    except requests.exceptions.RequestException as e:
+        print(f'Failed to download image {e}')
 
 def clean_data(raw):
     cleaned = raw.copy()
@@ -66,9 +86,8 @@ def clean_data(raw):
     return cleaned
 
 def match_name(query): #this method returns matching names to the input parameter
-    base_url = "https://api.scryfall.com/cards/search"
-    name_query = f'name:{query}'
-    params = {'q': name_query}
+    base_url = "https://api.scryfall.com/cards/autocomplete"
+    params = {'q': query}
 
     if query:
         try: 
@@ -77,10 +96,8 @@ def match_name(query): #this method returns matching names to the input paramete
             data = response.json()
 
             if 'data' in data:
-                card_names = []
-                print(f"Found {len(data['data'])} cards with names matching '{name_query}'")
-                for card in data['data']:
-                    card_names.append(card['name'])
+                card_names = data['data']
+                print(f"Found {len(data['data'])} cards with names matching '{query}'")
                 print(card_names)
                 return card_names
             
