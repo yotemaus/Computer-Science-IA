@@ -169,4 +169,17 @@ def fetch_by_id(id):
         row[5] = tuple(row[5])
     return row
 
+def clean_images(): #removes any images that are not linked to an exsiting card id
+    valid_files = []
+    cursor.execute('SELECT id FROM cards')
+    for id in cursor.fetchall():
+        valid_files.append(str(id[0]))
+
+    for file in image_dir_path.iterdir():
+        if file.is_file() and file.stem not in valid_files:
+            file.unlink()
+            print(f'Deleted {file}')
+
+
 create_tables()
+clean_images()
