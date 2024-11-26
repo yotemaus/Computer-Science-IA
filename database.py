@@ -26,12 +26,6 @@ def create_tables():
                         img_path TEXT
                     )''')    #create table and add card parameters, 'id' parameter used as uniqe identifier
     
-    cursor.execute('''CREATE TABLE IF NOT EXISTS comments(
-                        id INTEGER PRIMARY KEY,
-                        comment TEXT,
-                        FOREIGN KEY (id) REFERENCES cards(id)
-                    )''')
-    
     connection.commit()
 
 def add_query_constructor(name, cmc, cost, card_type, subtype, colour, rarity, count, img_path): #add a card to the database

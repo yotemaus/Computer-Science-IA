@@ -1,7 +1,7 @@
 import customtkinter as ctk
+from tkinter import filedialog
 from PIL import Image
 import database as db
-import logic
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -219,7 +219,7 @@ def add_card_window():
     add_image_frame.grid_columnconfigure(0, weight=1)
     add_image_label = ctk.CTkLabel(add_image_frame, text='Image', font=('Helvetica', 12, 'bold'), text_color='white')
     add_image_label.grid(column=0, row=0, padx=5, sticky='w')
-    add_image_button = ctk.CTkButton(add_image_frame, text='Select a File', command=lambda: add_image_label.configure(text=logic.image_selection()))
+    add_image_button = ctk.CTkButton(add_image_frame, text='Select a File', command=lambda: add_image_label.configure(text=image_selection()))
     add_image_button.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
 
@@ -527,7 +527,7 @@ def edit_window(id):
     edit_image_frame.grid_columnconfigure(0, weight=1)
     edit_image_label = ctk.CTkLabel(edit_image_frame, text=img_path, font=('Helvetica', 12, 'bold'), text_color='white')
     edit_image_label.grid(column=0, row=0, padx=5, sticky='w')
-    edit_image_button = ctk.CTkButton(edit_image_frame, text='Select a File', command=lambda: edit_image_label.configure(text=logic.image_selection()))
+    edit_image_button = ctk.CTkButton(edit_image_frame, text='Select a File', command=lambda: edit_image_label.configure(text=image_selection()))
     edit_image_button.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
 
@@ -575,6 +575,11 @@ def init_edit(id, edit_name_entry, edit_cost_entry, edit_cmc_entry, edit_type_en
     edit_data = {key: (value if value !='' else None) for key, value in edit_data.items()}
     db.edit_query_constructor(id, **edit_data)
 
+def image_selection():
+    img_path = filedialog.askopenfilename(title='select a file: ', filetypes=[("Images", ("*.png", "*.jpg", "*.jpeg"))])
+    if img_path:
+        print(f"Selected file: {img_path}")
+        return img_path
 
 # set grid weights for dynamic resizing
 app.grid_columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
