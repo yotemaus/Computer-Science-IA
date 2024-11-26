@@ -10,13 +10,6 @@ def search_card(cardname): #this method fetches card details from the scryfall d
         response.raise_for_status()
         card_data = response.json()
 
-        print(f"Card Name: {card_data['name']}")
-        print(f"CMC: {card_data['cmc']}")
-        print(f"Cost: {card_data['mana_cost']}")
-        print(f"Type: {card_data['type_line']}")
-        print(f"Colour: {card_data['colors']}")
-        print(f"Rarity: {card_data['rarity']}")
-
         output = {
             'name' : card_data['name'],
             'cmc' : card_data['cmc'],
@@ -27,6 +20,7 @@ def search_card(cardname): #this method fetches card details from the scryfall d
         }
 
         print(clean_data(output))
+        return clean_data(output)
 
     except requests.exceptions.RequestException as e:
         print(f'An error occured: {e}')
@@ -76,25 +70,23 @@ def match_name(query): #this method returns matching names to the input paramete
     name_query = f'name:{query}'
     params = {'q': name_query}
 
-    try: 
-        response = requests.get(base_url, params=params)
-        response.raise_for_status()
-        data = response.json()
+    if query:
+        try: 
+            response = requests.get(base_url, params=params)
+            response.raise_for_status()
+            data = response.json()
 
-        if 'data' in data:
-            card_names = []
-            print(f"Found {len(data['data'])} cards with names matching '{name_query}'")
-            for i, card in enumerate(data['data']):
-                print(f"{i+1}. - {card['name']}")
-                card_names.append(card['name'])
+            if 'data' in data:
+                card_names = []
+                print(f"Found {len(data['data'])} cards with names matching '{name_query}'")
+                for card in data['data']:
+                    card_names.append(card['name'])
+                print(card_names)
+                return card_names
+            
+            else:
+                print("No cards found.")
+                return []
 
-            selected = int(input("Select Card Number: "))
-            search_card(card_names[selected-1])
-        
-        else:
-            print("No cards found.")
-    
-    except requests.exceptions.RequestException as e:
-        print(f"An error occured: {e}")
-
-match_name(input("Search Cardname: "))
+        except requests.exceptions.RequestException as e:
+            print(f"An error occured: {e}")

@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import filedialog
 from PIL import Image
 import database as db
+import api_handler as api
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -138,12 +139,31 @@ grid_scroll.grid_columnconfigure((0, 1, 2, 3), weight=1)
 #the window to add a card
 def add_card_window():
     add_window = ctk.CTkToplevel()
-    add_window.geometry('430x730')
+    add_window.geometry('430x1030')
     add_window.grid_columnconfigure(0, weight=1)
     add_window.title('Add a Card')
 
+    add_api_frame = ctk.CTkFrame(add_window)
+    add_api_frame.grid(row=0, column=0, padx=10, pady=(10,5), sticky='ew')
+    add_api_frame.grid_columnconfigure(0, weight=1)
+    search_api_entry = ctk.CTkEntry(add_api_frame, placeholder_text='Enter Card Name')
+    search_api_entry.grid(row=0, column=0, padx=(5,0), pady=(10,5), sticky='ew')
+    select_fill_option = ctk.CTkOptionMenu(add_api_frame, state='disabled', values=['Select'])
+    select_fill_option.grid(row=1, column=0, padx=(5,0), pady=(5,10), sticky='ew')
+    search_api_button = ctk.CTkButton(add_api_frame, text='Search Scryfall', fg_color='purple', command=lambda: 
+                                                                                                select_fill_option.configure(
+                                                                                                values=api.match_name(search_api_entry.get()),
+                                                                                                state='enabled'
+                                                                                                ))
+    search_api_button.grid(row=0, column=1, padx=5, pady=(10,5), sticky='ew')
+    fill_button = ctk.CTkButton(add_api_frame, text='Fill', command=lambda: fill_add_fields(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
+                                                                            add_subtype_entry, add_colour_checkbox_w, add_colour_checkbox_u,
+                                                                            add_colour_checkbox_b, add_colour_checkbox_r, add_colour_checkbox_g,
+                                                                            add_rarity_entry, add_count_entry, add_image_label, select_fill_option))
+    fill_button.grid(row=1, column=1, padx=5, pady=(5,10), sticky='ew')
+
     add_name_frame = ctk.CTkFrame(add_window)
-    add_name_frame.grid(row=0, column=0, padx=10, pady=(10,5), sticky='ew')
+    add_name_frame.grid(row=1, column=0, padx=10, pady=5, sticky='ew')
     add_name_frame.grid_columnconfigure(0, weight=1)
     add_name_label = ctk.CTkLabel(add_name_frame, text='Card Name', font=('Helvetica', 12, 'bold'), text_color='white')
     add_name_label.grid(column=0, row=0, padx=5, sticky='w')
@@ -151,7 +171,7 @@ def add_card_window():
     add_name_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
     add_cost_frame = ctk.CTkFrame(add_window)
-    add_cost_frame.grid(row=1, column=0, padx=10, pady=5, sticky='ew')
+    add_cost_frame.grid(row=2, column=0, padx=10, pady=5, sticky='ew')
     add_cost_frame.grid_columnconfigure(0, weight=1)
     add_cost_label = ctk.CTkLabel(add_cost_frame, text='Cost (as it appears on the card)', font=('Helvetica', 12, 'bold'), text_color='white')
     add_cost_label.grid(column=0, row=0, padx=5, sticky='w')
@@ -159,7 +179,7 @@ def add_card_window():
     add_cost_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
     add_cmc_frame = ctk.CTkFrame(add_window)
-    add_cmc_frame.grid(row=2, column=0, padx=10, pady=5, sticky='ew')
+    add_cmc_frame.grid(row=3, column=0, padx=10, pady=5, sticky='ew')
     add_cmc_frame.grid_columnconfigure(0, weight=1)
     add_cmc_label = ctk.CTkLabel(add_cmc_frame, text='Converted Mana Cost', font=('Helvetica', 12, 'bold'), text_color='white')
     add_cmc_label.grid(column=0, row=0, padx=5, sticky='w')
@@ -167,7 +187,7 @@ def add_card_window():
     add_cmc_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
     add_type_frame = ctk.CTkFrame(add_window)
-    add_type_frame.grid(row=3, column=0, padx=10, pady=5, sticky='ew')
+    add_type_frame.grid(row=4, column=0, padx=10, pady=5, sticky='ew')
     add_type_frame.grid_columnconfigure(0, weight=1)
     add_type_label = ctk.CTkLabel(add_type_frame, text='Card Type', font=('Helvetica', 12, 'bold'), text_color='white')
     add_type_label.grid(column=0, row=0, padx=5, sticky='w')
@@ -175,7 +195,7 @@ def add_card_window():
     add_type_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
     
     add_subtype_frame = ctk.CTkFrame(add_window)
-    add_subtype_frame.grid(row=4, column=0, padx=10, pady=5, sticky='ew')
+    add_subtype_frame.grid(row=5, column=0, padx=10, pady=5, sticky='ew')
     add_subtype_frame.grid_columnconfigure(0, weight=1)
     add_subtype_label = ctk.CTkLabel(add_subtype_frame, text='Subtype', font=('Helvetica', 12, 'bold'), text_color='white')
     add_subtype_label.grid(column=0, row=0, padx=5, sticky='w')
@@ -183,7 +203,7 @@ def add_card_window():
     add_subtype_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
     add_colours_frame = ctk.CTkFrame(add_window)
-    add_colours_frame.grid(row=5, column=0, padx=10, pady=5, sticky='ew')
+    add_colours_frame.grid(row=6, column=0, padx=10, pady=5, sticky='ew')
     add_colours_frame.grid_columnconfigure((0,1,2,3,4), weight=1)
     add_colours_label = ctk.CTkLabel(add_colours_frame, text='Colour', font=('Helvetica', 12, 'bold'), text_color='white')
     add_colours_label.grid(column=0, row=0, padx=5, sticky='w')
@@ -199,7 +219,7 @@ def add_card_window():
     add_colour_checkbox_g.grid(column=4, row=1, padx=(0, 5), pady=(0, 8), sticky='ew')
 
     add_rarity_frame = ctk.CTkFrame(add_window)
-    add_rarity_frame.grid(row=6, column=0, padx=10, pady=5, sticky='ew')
+    add_rarity_frame.grid(row=7, column=0, padx=10, pady=5, sticky='ew')
     add_rarity_frame.grid_columnconfigure(0, weight=1)
     add_rarity_label = ctk.CTkLabel(add_rarity_frame, text='Rarity', font=('Helvetica', 12, 'bold'), text_color='white')
     add_rarity_label.grid(column=0, row=0, padx=5, sticky='w')
@@ -207,7 +227,7 @@ def add_card_window():
     add_rarity_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
     add_count_frame = ctk.CTkFrame(add_window)
-    add_count_frame.grid(row=7, column=0, padx=10, pady=5, sticky='ew')
+    add_count_frame.grid(row=8, column=0, padx=10, pady=5, sticky='ew')
     add_count_frame.grid_columnconfigure(0, weight=1)
     add_count_label = ctk.CTkLabel(add_count_frame, text='Quantity (Enter an Integer)', font=('Helvetica', 12, 'bold'), text_color='white')
     add_count_label.grid(column=0, row=0, padx=5, sticky='w')
@@ -215,7 +235,7 @@ def add_card_window():
     add_count_entry.grid(column=0, row=1, padx=5, pady=(0,5), sticky='ew')
 
     add_image_frame = ctk.CTkFrame(add_window)
-    add_image_frame.grid(row=8, column=0, padx=10, pady=5, sticky='ew')
+    add_image_frame.grid(row=9, column=0, padx=10, pady=5, sticky='ew')
     add_image_frame.grid_columnconfigure(0, weight=1)
     add_image_label = ctk.CTkLabel(add_image_frame, text='Image', font=('Helvetica', 12, 'bold'), text_color='white')
     add_image_label.grid(column=0, row=0, padx=5, sticky='w')
@@ -229,8 +249,52 @@ def add_card_window():
                                                                                         add_rarity_entry, add_count_entry, add_image_label), 
                                                                                 add_window.destroy(), 
                                                                                 init_search()])
-    confirm_add_button.grid(row=9, column=0, padx=10, pady=(5,10), sticky='nesw')
-    add_window.grid_rowconfigure(9, weight=1)
+    confirm_add_button.grid(row=10, column=0, padx=10, pady=(5,10), sticky='nesw')
+    add_window.grid_rowconfigure(10, weight=1)
+
+def fill_add_fields(add_name_entry, add_cost_entry, add_cmc_entry, add_type_entry,
+            add_subtype_entry, add_colour_checkbox_w, add_colour_checkbox_u,
+            add_colour_checkbox_b, add_colour_checkbox_r, add_colour_checkbox_g,
+            add_rarity_entry, add_count_entry, add_image_label, select_fill_option):
+    
+    cardname = select_fill_option.get()
+    data = api.search_card(cardname)
+
+    namevar = ctk.StringVar(value=data['name']) # type: ignore
+    add_name_entry.configure(textvariable=namevar)
+
+    costvar = ctk.StringVar(value=data['cost']) # type: ignore
+    add_cost_entry.configure(textvariable=costvar)
+
+    cmcvar = ctk.StringVar(value=data['cmc']) # type: ignore
+    add_cmc_entry.configure(textvariable=cmcvar)
+
+    add_type_entry.set(data['card_type']) # type: ignore
+
+    subtypevar = ctk.StringVar(value=data['subtype']) # type: ignore
+    add_subtype_entry.configure(textvariable=subtypevar)
+
+    colours = data['colors'] # type: ignore
+    add_colour_checkbox_w.deselect()
+    add_colour_checkbox_u.deselect()
+    add_colour_checkbox_b.deselect()
+    add_colour_checkbox_r.deselect()
+    add_colour_checkbox_g.deselect()
+    if 'W' in colours:
+        add_colour_checkbox_w.select()
+    if 'U' in colours:
+        add_colour_checkbox_u.select()
+    if 'B' in colours:
+        add_colour_checkbox_b.select()
+    if 'R' in colours:
+        add_colour_checkbox_r.select()
+    if 'G' in colours:
+        add_colour_checkbox_g.select()
+
+    add_rarity_entry.set(data['rarity']) # type: ignore
+
+    countvar = ctk.StringVar(value='1')
+    add_count_entry.configure(textvariable=countvar)
 
 
 #passing parameters to the databse add function
