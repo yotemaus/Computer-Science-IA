@@ -47,8 +47,8 @@ def save_image(image_url, cardname):
     except requests.exceptions.RequestException as e:
         print(f'Failed to download image {e}')
 
-def clean_data(raw):
-    cleaned = raw.copy()
+def clean_data(original_dict):
+    cleaned = original_dict.copy()
 
     for key, value in list(cleaned.items()):
         if key == 'cmc':
